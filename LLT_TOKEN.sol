@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.16;
 
 // ----------------------------------------------------------------------------
 // 'LLT' 'LILLIUS Token' token contract
@@ -17,18 +17,18 @@ pragma solidity ^0.5.0;
 library SafeMath {
 	function add(uint a, uint b) internal pure returns (uint c) {
 		c = a + b;
-		require(c >= a);
+		require(c >= a, "SafeMath: addition overflow");
 	}
 	function sub(uint a, uint b) internal pure returns (uint c) {
-		require(b <= a);
+		require(b <= a ,"SafeMath: subtraction overflow");
 		c = a - b;
 	}
 	function mul(uint a, uint b) internal pure returns (uint c) {
 		c = a * b;
-		require(a == 0 || c / a == b);
+		require(a == 0 || c / a == b, "SafeMath: multiplication overflow");
 	}
 	function div(uint a, uint b) internal pure returns (uint c) {
-		require(b > 0);
+		require(b > 0 , "SafeMath: division by zero");
 		c = a / b;
 	}
 }
@@ -48,6 +48,11 @@ contract ERC20Interface {
 
 	event Transfer(address indexed from, address indexed to, uint tokens);
 	event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
+
+	event StartTrade();
+	event StopTrade();
+	
+	
 }
 
 
@@ -65,7 +70,7 @@ contract ApproveAndCallFallBack {
 // Owned contract
 // ----------------------------------------------------------------------------
 contract Owned {
-	address public owner;
+	address  owner;
 
 	constructor() public {
 		owner = msg.sender;
@@ -88,8 +93,8 @@ contract LLTToken is ERC20Interface, Owned {
 	string public symbol;
 	string public name;
 	uint8 public decimals;
-	uint _totalSupply;
-	bool _stopTrade;
+	uint  public _totalSupply;
+	bool public _stopTrade;
 
 	mapping(address => uint) balances;
 	mapping(address => mapping(address => uint)) allowed;
@@ -113,7 +118,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// Total supply
 	// ------------------------------------------------------------------------
 	function totalSupply() public view returns (uint) {
-		return _totalSupply.sub(balances[address(0)]);
+		return _totalSupply;
 	}
 
 
@@ -121,8 +126,9 @@ contract LLTToken is ERC20Interface, Owned {
 	// Stop Trade
 	// ------------------------------------------------------------------------
 	function stopTrade() public onlyOwner {
-		require(_stopTrade != true);
+		require(_stopTrade,"Trade has stopped");
 		_stopTrade = true;
+		emit StopTrade();
 	}
 
 
@@ -130,8 +136,9 @@ contract LLTToken is ERC20Interface, Owned {
 	// Start Trade
 	// ------------------------------------------------------------------------
 	function startTrade() public onlyOwner {
-		require(_stopTrade == true);
+		require(_stopTrade,"Trade has stopped");
 		_stopTrade = false;
+		emit StartTrade();
 	}
 
 
@@ -149,7 +156,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// - 0 value transfers are allowed
 	// ------------------------------------------------------------------------
 	function transfer(address to, uint tokens) public returns (bool success) {
-		require(_stopTrade != true);
+		require(_stopTrade,"Trade has stopped");
 		require(to > address(0));
 
 		balances[msg.sender] = balances[msg.sender].sub(tokens);
@@ -168,7 +175,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// as this should be implemented in user interfaces
 	// ------------------------------------------------------------------------
 	function approve(address spender, uint tokens) public returns (bool success) {
-		require(_stopTrade != true);
+		require(_stopTrade,"Trade has stopped");
 
 		allowed[msg.sender][spender] = tokens;
 		emit Approval(msg.sender, spender, tokens);
@@ -186,7 +193,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// - 0 value transfers are allowed
 	// ------------------------------------------------------------------------
 	function transferFrom(address from, address to, uint tokens) public returns (bool success) {
-		require(_stopTrade != true);
+		require(_stopTrade,"Trade has stopped");
 		require(from > address(0));
 		require(to > address(0));
 
@@ -205,7 +212,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// transferred to the spender's account
 	// ------------------------------------------------------------------------
 	function allowance(address tokenOwner, address spender) public view returns (uint remaining) {
-		require(_stopTrade != true);
+		require(_stopTrade,"Trade has stopped");
 
 		return allowed[tokenOwner][spender];
 	}
@@ -217,6 +224,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// `receiveApproval(...)` is then executed
 	// ------------------------------------------------------------------------
 	function approveAndCall(address spender, uint tokens, bytes memory data) public returns (bool success) {
+		require(_stopTrade,"Trade has stopped");
 		require(msg.sender != spender);
 
 		allowed[msg.sender][spender] = tokens;
