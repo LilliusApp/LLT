@@ -126,7 +126,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// Stop Trade
 	// ------------------------------------------------------------------------
 	function stopTrade() public onlyOwner {
-		require(_stopTrade,"Trade has stopped");
+		require(!_stopTrade,"Trade has stopped");
 		_stopTrade = true;
 		emit StopTrade();
 	}
@@ -136,7 +136,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// Start Trade
 	// ------------------------------------------------------------------------
 	function startTrade() public onlyOwner {
-		require(_stopTrade,"Trade has stopped");
+		require(_stopTrade,"Trade has started");
 		_stopTrade = false;
 		emit StartTrade();
 	}
@@ -156,7 +156,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// - 0 value transfers are allowed
 	// ------------------------------------------------------------------------
 	function transfer(address to, uint tokens) public returns (bool success) {
-		require(_stopTrade,"Trade has stopped");
+		require(!_stopTrade,"Trade has stopped");
 		require(to > address(0));
 
 		balances[msg.sender] = balances[msg.sender].sub(tokens);
@@ -175,7 +175,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// as this should be implemented in user interfaces
 	// ------------------------------------------------------------------------
 	function approve(address spender, uint tokens) public returns (bool success) {
-		require(_stopTrade,"Trade has stopped");
+		require(!_stopTrade,"Trade has stopped");
 
 		allowed[msg.sender][spender] = tokens;
 		emit Approval(msg.sender, spender, tokens);
@@ -193,7 +193,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// - 0 value transfers are allowed
 	// ------------------------------------------------------------------------
 	function transferFrom(address from, address to, uint tokens) public returns (bool success) {
-		require(_stopTrade,"Trade has stopped");
+		require(!_stopTrade,"Trade has stopped");
 		require(from > address(0));
 		require(to > address(0));
 
@@ -212,7 +212,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// transferred to the spender's account
 	// ------------------------------------------------------------------------
 	function allowance(address tokenOwner, address spender) public view returns (uint remaining) {
-		require(_stopTrade,"Trade has stopped");
+		require(!_stopTrade,"Trade has stopped");
 
 		return allowed[tokenOwner][spender];
 	}
@@ -224,7 +224,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// `receiveApproval(...)` is then executed
 	// ------------------------------------------------------------------------
 	function approveAndCall(address spender, uint tokens, bytes memory data) public returns (bool success) {
-		require(_stopTrade,"Trade has stopped");
+		require(!_stopTrade,"Trade has stopped");
 		require(msg.sender != spender);
 
 		allowed[msg.sender][spender] = tokens;
