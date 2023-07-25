@@ -49,9 +49,7 @@ contract ERC20Interface {
 	event Transfer(address indexed from, address indexed to, uint tokens);
 	event Approval(address indexed tokenOwner, address indexed spender, uint tokens);
 
-	event StartTrade();
-	event StopTrade();
-	
+	 
 	
 }
 
@@ -94,7 +92,7 @@ contract LLTToken is ERC20Interface, Owned {
 	string public name;
 	uint8 public decimals;
 	uint  public _totalSupply;
-	bool public _stopTrade;
+	 
 
 	mapping(address => uint) balances;
 	mapping(address => mapping(address => uint)) allowed;
@@ -108,7 +106,7 @@ contract LLTToken is ERC20Interface, Owned {
 		name = "LILLIUS Token";
 		decimals = 18;
 		_totalSupply = 1000000000 * 10**uint(decimals);
-		_stopTrade = false;
+	 
 		balances[owner] = _totalSupply;
 		emit Transfer(address(0), owner, _totalSupply);
 	}
@@ -121,27 +119,7 @@ contract LLTToken is ERC20Interface, Owned {
 		return _totalSupply;
 	}
 
-
-	// ------------------------------------------------------------------------
-	// Stop Trade
-	// ------------------------------------------------------------------------
-	function stopTrade() public onlyOwner {
-		require(!_stopTrade,"Trade has stopped");
-		_stopTrade = true;
-		emit StopTrade();
-	}
-
-
-	// ------------------------------------------------------------------------
-	// Start Trade
-	// ------------------------------------------------------------------------
-	function startTrade() public onlyOwner {
-		require(_stopTrade,"Trade has started");
-		_stopTrade = false;
-		emit StartTrade();
-	}
-
-
+ 
 	// ------------------------------------------------------------------------
 	// Get the token balance for account `tokenOwner`
 	// ------------------------------------------------------------------------
@@ -156,7 +134,6 @@ contract LLTToken is ERC20Interface, Owned {
 	// - 0 value transfers are allowed
 	// ------------------------------------------------------------------------
 	function transfer(address to, uint tokens) public returns (bool success) {
-		require(!_stopTrade,"Trade has stopped");
 		require(to > address(0));
 
 		balances[msg.sender] = balances[msg.sender].sub(tokens);
@@ -175,8 +152,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// as this should be implemented in user interfaces
 	// ------------------------------------------------------------------------
 	function approve(address spender, uint tokens) public returns (bool success) {
-		require(!_stopTrade,"Trade has stopped");
-
+		
 		allowed[msg.sender][spender] = tokens;
 		emit Approval(msg.sender, spender, tokens);
 		return true;
@@ -193,7 +169,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// - 0 value transfers are allowed
 	// ------------------------------------------------------------------------
 	function transferFrom(address from, address to, uint tokens) public returns (bool success) {
-		require(!_stopTrade,"Trade has stopped");
+		 
 		require(from > address(0));
 		require(to > address(0));
 
@@ -212,7 +188,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// transferred to the spender's account
 	// ------------------------------------------------------------------------
 	function allowance(address tokenOwner, address spender) public view returns (uint remaining) {
-		require(!_stopTrade,"Trade has stopped");
+		 
 
 		return allowed[tokenOwner][spender];
 	}
@@ -224,7 +200,7 @@ contract LLTToken is ERC20Interface, Owned {
 	// `receiveApproval(...)` is then executed
 	// ------------------------------------------------------------------------
 	function approveAndCall(address spender, uint tokens, bytes memory data) public returns (bool success) {
-		require(!_stopTrade,"Trade has stopped");
+		 
 		require(msg.sender != spender);
 
 		allowed[msg.sender][spender] = tokens;
@@ -240,12 +216,5 @@ contract LLTToken is ERC20Interface, Owned {
 	function () external payable {
 		revert();
 	}
-
-
-	// ------------------------------------------------------------------------
-	// Owner can transfer out any accidentally sent ERC20 tokens
-	// ------------------------------------------------------------------------
-	function transferAnyERC20Token(address tokenAddress, uint tokens) public onlyOwner returns (bool success) {
-		return ERC20Interface(tokenAddress).transfer(owner, tokens);
-	}
+ 
 }
